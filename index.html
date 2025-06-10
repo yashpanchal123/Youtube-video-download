@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video Downloader</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #ff0000;
+            --secondary-color: #282828;
+            --accent-color: #f8f9fa;
+        }
+
+        body {
+            padding: 20px;
+            background-color: var(--accent-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            max-width: 800px;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-top: 50px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--secondary-color);
+            font-size: 1.1em;
+        }
+
+        .nav-tabs {
+            border-bottom: 2px solid #dee2e6;
+            margin-bottom: 25px;
+        }
+
+        .nav-tabs .nav-link {
+            color: var(--secondary-color);
+            border: none;
+            padding: 10px 20px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tabs .nav-link:hover {
+            border: none;
+            color: var(--primary-color);
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            border: none;
+            border-bottom: 3px solid var(--primary-color);
+            background: none;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: var(--secondary-color);
+        }
+
+        .form-control {
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(255, 0, 0, 0.25);
+        }
+
+        .format-options {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .form-check {
+            margin-bottom: 10px;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border: none;
+            padding: 12px 25px;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #cc0000;
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .alert {
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            border: none;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .download-icon {
+            margin-right: 8px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: #dc3545;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .success {
+            color: #198754;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fab fa-youtube"></i> YouTube Downloader</h1>
+            <p>Download videos and audio from YouTube easily</p>
+        </div>
+        
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="video-tab" data-bs-toggle="tab" data-bs-target="#video" type="button" role="tab">
+                    <i class="fas fa-video"></i> Single Video
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="playlist-tab" data-bs-toggle="tab" data-bs-target="#playlist" type="button" role="tab">
+                    <i class="fas fa-list"></i> Playlist
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="channel-tab" data-bs-toggle="tab" data-bs-target="#channel" type="button" role="tab">
+                    <i class="fas fa-list"></i> Channel
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="myTabContent">
+            <!-- Single Video Tab -->
+            <div class="tab-pane fade show active" id="video" role="tabpanel">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Download Single Video</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="videoForm">
+                            <div class="mb-3">
+                                <label for="videoUrl" class="form-label">Video URL</label>
+                                <input type="url" class="form-control" id="videoUrl" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Format</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="videoFormat" id="mp4" value="mp4" checked>
+                                    <label class="form-check-label" for="mp4">MP4 (Video)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="videoFormat" id="mp3" value="mp3">
+                                    <label class="form-check-label" for="mp3">MP3 (Audio)</label>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Download Video</button>
+                        </form>
+                        <div id="videoLoading" class="loading">
+                            <div class="d-flex align-items-center">
+                                <div class="spinner-border text-primary me-2" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <span>Downloading video...</span>
+                            </div>
+                        </div>
+                        <div id="videoError" class="error"></div>
+                        <div id="videoSuccess" class="success"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Playlist Tab -->
+            <div class="tab-pane fade" id="playlist" role="tabpanel">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Download Playlist</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="playlistForm">
+                            <div class="mb-3">
+                                <label for="playlistUrl" class="form-label">Playlist URL</label>
+                                <input type="url" class="form-control" id="playlistUrl" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Format</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="playlistFormat" id="playlistMp4" value="mp4" checked>
+                                    <label class="form-check-label" for="playlistMp4">MP4 (Video)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="playlistFormat" id="playlistMp3" value="mp3">
+                                    <label class="form-check-label" for="playlistMp3">MP3 (Audio)</label>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Download Playlist</button>
+                        </form>
+                        <div id="playlistLoading" class="loading">
+                            <div class="d-flex align-items-center">
+                                <div class="spinner-border text-primary me-2" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <span>Downloading playlist videos...</span>
+                            </div>
+                        </div>
+                        <div id="playlistError" class="error"></div>
+                        <div id="playlistSuccess" class="success"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Channel Tab -->
+            <div class="tab-pane fade" id="channel" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Download Channel Videos</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="channelForm">
+                            <div class="mb-3">
+                                <label for="channelUrl" class="form-label">Channel URL</label>
+                                <input type="url" class="form-control" id="channelUrl" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Format</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="channelFormat" id="channelMp4" value="mp4" checked>
+                                    <label class="form-check-label" for="channelMp4">MP4 (Video)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="channelFormat" id="channelMp3" value="mp3">
+                                    <label class="form-check-label" for="channelMp3">MP3 (Audio)</label>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Download Channel</button>
+                        </form>
+                        <div id="channelLoading" class="loading">
+                            <div class="d-flex align-items-center">
+                                <div class="spinner-border text-primary me-2" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <span>Downloading channel videos...</span>
+                            </div>
+                        </div>
+                        <div id="channelError" class="error"></div>
+                        <div id="channelSuccess" class="success"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showAlert(message, type = 'success') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show`;
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            alertContainer.appendChild(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            loading.style.display = show ? 'flex' : 'none';
+        }
+
+        // Function to handle file download
+        async function handleFileDownload(response, loadingId, errorId, successId) {
+            const loading = document.getElementById(loadingId);
+            const error = document.getElementById(errorId);
+            const success = document.getElementById(successId);
+
+            try {
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Download failed');
+                }
+
+                // Get filename from Content-Disposition header
+                const contentDisposition = response.headers.get('content-disposition');
+                let filename = 'download';
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename="([^"]+)"/);
+                    if (filenameMatch && filenameMatch[1]) {
+                        filename = decodeURIComponent(filenameMatch[1]);
+                    }
+                }
+
+                // Create blob from response
+                const blob = await response.blob();
+                
+                // Create download link
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                success.textContent = 'Download started!';
+                success.style.display = 'block';
+                error.style.display = 'none';
+            } catch (err) {
+                error.textContent = `Error downloading: ${err.message}`;
+                error.style.display = 'block';
+                success.style.display = 'none';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        // Single video download
+        document.getElementById('videoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const videoUrl = document.getElementById('videoUrl').value;
+            const format = document.querySelector('input[name="videoFormat"]:checked').value;
+            
+            const loading = document.getElementById('videoLoading');
+            const error = document.getElementById('videoError');
+            const success = document.getElementById('videoSuccess');
+            
+            loading.style.display = 'block';
+            error.style.display = 'none';
+            success.style.display = 'none';
+
+            try {
+                const response = await fetch('/download-video', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        'video_url': videoUrl,
+                        'format_type': format
+                    })
+                });
+
+                await handleFileDownload(response, 'videoLoading', 'videoError', 'videoSuccess');
+            } catch (err) {
+                error.textContent = `Error downloading video: ${err.message}`;
+                error.style.display = 'block';
+                loading.style.display = 'none';
+            }
+        });
+
+        // Playlist download
+        document.getElementById('playlistForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const playlistUrl = document.getElementById('playlistUrl').value;
+            const format = document.querySelector('input[name="playlistFormat"]:checked').value;
+            
+            const loading = document.getElementById('playlistLoading');
+            const error = document.getElementById('playlistError');
+            const success = document.getElementById('playlistSuccess');
+            
+            loading.style.display = 'block';
+            error.style.display = 'none';
+            success.style.display = 'none';
+
+            try {
+                const response = await fetch('/download-playlist', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        'playlist_url': playlistUrl,
+                        'format_type': format
+                    })
+                });
+
+                await handleFileDownload(response, 'playlistLoading', 'playlistError', 'playlistSuccess');
+            } catch (err) {
+                error.textContent = `Error downloading playlist: ${err.message}`;
+                error.style.display = 'block';
+                loading.style.display = 'none';
+            }
+        });
+
+        // Channel download
+        document.getElementById('channelForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const channelUrl = document.getElementById('channelUrl').value;
+            const format = document.querySelector('input[name="channelFormat"]:checked').value;
+            
+            const loading = document.getElementById('channelLoading');
+            const error = document.getElementById('channelError');
+            const success = document.getElementById('channelSuccess');
+            
+            loading.style.display = 'block';
+            error.style.display = 'none';
+            success.style.display = 'none';
+
+            try {
+                const response = await fetch('/download-channel', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        'channel_url': channelUrl,
+                        'format_type': format
+                    })
+                });
+
+                await handleFileDownload(response, 'channelLoading', 'channelError', 'channelSuccess');
+            } catch (err) {
+                error.textContent = `Error downloading channel: ${err.message}`;
+                error.style.display = 'block';
+                loading.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html> 
